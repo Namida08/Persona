@@ -1,0 +1,1 @@
+PATH=$PATH:/home/yaku/tools/blender-2.76b-linux-glibc211-x86_64
