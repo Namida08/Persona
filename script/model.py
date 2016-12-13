@@ -9,9 +9,9 @@ from point import Point
 
 class Model:
     
-    #‰æ‘œ‚Ì“Á’¥“_‚ÌÀ•W”z—ñæ“¾
-    #in:  QÆ‰æ‘œ‚Ìƒtƒ@ƒCƒ‹–¼
-    #out: “Á’¥“_‚ÌÀ•W”z—ñ
+    #
+    #in:  
+    #out: 
     def _get_image_feature_points(self, file_name):
         array = []
         f = open(file_name, "r")
@@ -72,18 +72,18 @@ class Model:
             parts.append(self.get_vertices()[index])
         return parts
 
-    #Œ´“_À•W‚©‚ç‚ÌƒxƒNƒgƒ‹
+    #ç”»åƒç›¸å¯¾åº§æ¨™å–å¾—
     def _get_local_image_point(self, point):
         return point - self.get_image_reference_point()
     
-    #ƒ‚ƒfƒ‹‚ÌXZ“Š‰e–Êã‚Å‚Ì2“_ŠÔ‚Ì‹——£
+    #
     def _get_projection_vector_distance_xz(self, vertex1, vertex2):
         point = Point(vertex1.co.x - vertex2.co.x,
                       vertex1.co.z - vertex2.co.z)
         projection_vector = Point(cos(self.yaw_angle), sin(self.yaw_angle))
         return point.get_projection_vector_distance(projection_vector)
     
-    #ŠáŠÔ‹——£‚©‚ç‰æ‘œ‚Æ”ä‚×‚Ä‚Ìƒ‚ƒfƒ‹‚Ì”{—¦‚ğæ“¾
+    #
     def _get_magnification(self):
         image = self.get_image_distance_points()
         model = self.get_model_distance_vertices()
@@ -91,19 +91,19 @@ class Model:
         model_d = self._get_projection_vector_distance_xz(model[0], model[1])
         return model_d / image_d
 
-    #Œ´“_À•W‚©‚ç‚ÌƒxƒNƒgƒ‹
+    #ãƒ¢ãƒ‡ãƒ«åº§æ¨™
     def _get_local_model_point(self, vertex):
         return Point(self._get_projection_vector_distance_xz(vertex, self.get_model_reference_vertex()),
                     vertex.co.y - self.get_model_reference_vertex().co.y)
 
-    #“Š‰e–Êã‚Å‚Ì‹——£·
+    #å¯¾å¿œç‚¹ã¨ã®è·é›¢è¨ˆç®—
     def _get_distance(self, landmark):
         image = self._get_local_image_point(self.get_feature_point(landmark))
         image *= self._get_magnification()
-        model = self._get_local_model_point(self.get_vertex(landmark))       
+        model = self._get_local_model_point(self.get_vertex(landmark))    
         return image - model
     
-    #ˆÚ“®—Ê‰Á–¡‚µ‚½À•W
+    #ç§»å‹•é‡è¨ˆç®—
     def get_movement_value(self, landmark):
         vector = self.get_vertex(landmark).co
 
