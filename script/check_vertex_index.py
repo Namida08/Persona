@@ -1,5 +1,7 @@
 import bpy
 
+#頂点のindexを調べるためのコード
+
 bpy.ops.object.mode_set(mode='OBJECT')
 i = 0
 for v in bpy.data.objects['EYE_DEF'].data.vertices:

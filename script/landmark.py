@@ -3,9 +3,7 @@ import math
 
 class Landmark:
     
-    #image: 画像上の特徴点index
-    #model: モデル上の対応頂点index
-    #part:  モデル上の対応変形部位の頂点index配列
+    #in: 画像上の特徴点index, モデル上の対応頂点index, モデル上の対応変形部位の頂点index配列
     def __init__(self, point_index, vertex_index, part_indexes):
         self.point_index = point_index
         self.vertex_index = vertex_index
