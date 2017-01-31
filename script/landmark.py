@@ -19,7 +19,7 @@ class Landmark:
         return self.part_indexes
 
     def has_index(self):
-        if (self.get_point_index() != -1 and self.get_vertex_index() != -1):
+        if (self.get_point_index() != -1):
             return True
         else:
             return False

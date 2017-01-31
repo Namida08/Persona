@@ -3,11 +3,11 @@
 
 
 import sys
-sys.path.append("/home/yaku/work/model_sculptor/script")
+sys.path.append("../script")
 from model_sculptor import ModelSculptor
 
 
-a = ModelSculptor("/home/yaku/work/model_sculptor/image_1")
+a = ModelSculptor("MTH_DEF", "../image_1", 0)
 a.run()
 
 
