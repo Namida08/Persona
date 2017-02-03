@@ -9,11 +9,20 @@ from landmark import Landmark
 #Blenderの命令を使用して変形を行うクラス
 class ModelSculptor:
     MODEL_NAME = ""
-    MAX_VERTEX_NUM = 1024
     
-    #目の周辺の変形させない部分の頂点インデックス
-    LEFT_CONST = []
-    
+    #変形の影響を受けない部分の頂点インデックス
+    FIXED_INDEX = []
+
+    #左眼孔を構成する座標index 24点
+    LE_INDEX = [47,58,65,71,74,77,87,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107]
+    #右眼孔を構成する座標index 24点
+    RE_INDEX = [178,188,195,201,204,207,219,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239]
+
+    #左眼孔周辺座標index 26点
+    LER_INDEX = [50,51,54,56,57,61,70,73,88,89,109,120,121,122,123,124,125,140,142,144,145,146,148,149,150,151]
+    #右眼孔周辺座標index 26点
+    RER_INDEX = [180,181,184,186,187,191,200,203,220,221,241,252,253,254,255,256,257,272,274,276,277,278,280,281,282,283]
+
     def __init__(self, model_name, file_name, yaw_angle):
         ModelSculptor.MODEL_NAME = model_name
         bpy.ops.object.mode_set(mode='OBJECT')
@@ -49,15 +58,40 @@ class ModelSculptor:
         self.model.add_landmark(17, 0, [0, 8, 9, 10, 14, 15])
         self.model.add_landmark(18, 3, [3, 1, 2, 7, 11, 19])
         self.model.add_landmark(19, 4, [4, 5, 6, 12, 13, 16, 17, 18])
-        #self.model.add_landmark(20, 434, [434])  
+        #self.model.add_landmark(20, 434, [434])
 
-        for i in range(0, self.MAX_VERTEX_NUM):
+        #ラプラシアン変形の影響を受けない頂点インデックス設定
+        for i in range(0, len(self.model.get_vertices()) - 1):
+            flag = False
+
             for j,landmark in enumerate(self.model.get_landmarks()):
                 for z,part in enumerate(landmark.get_part_indexes()):
-                    if i != part:
-                        self.LEFT_CONST.append(i)
+                    if i == part:
+                        flag = True
+                        break
+                
+            for j,index in enumerate(self.LE_INDEX):
+                if i == index:
+                    flag = True
+                    break
+            for j,index in enumerate(self.RE_INDEX):
+                if i == index:
+                    flag = True
+                    break
+            for j,index in enumerate(self.LER_INDEX):
+                if i == index:
+                    flag = True
+                    break
+            for j,index in enumerate(self.RER_INDEX):
+                if i == index:
+                    flag = True
+                    break
 
-        self.model.add_landmark(-1, ModelSculptor.LEFT_CONST[0], ModelSculptor.LEFT_CONST)
+            if not(flag):
+                print(i)
+                self.FIXED_INDEX.append(i)
+
+        self.model.add_landmark(-1, self.FIXED_INDEX[0], self.FIXED_INDEX)
     
 
     def _get_modifier_name(self, i):
@@ -138,5 +172,15 @@ class ModelSculptor:
         self._laplaciandeform_bind()
         self._empty_locatuion_update()
         self._cleanup()
+        self._write_vertex_result("result")
         return True
 
+    #頂点座標データファイル書き込み
+    #in: ファイル名 
+    #out: 特徴点座標の配列
+    def _write_vertex_result(self, file_name):
+        f = open(file_name, "w", encoding='utf-8')
+        for i,vertex in enumerate(self.model.get_vertices()):
+            f.write(i, vertex.co)
+        f.close()
+        
