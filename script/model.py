@@ -48,16 +48,19 @@ class Model:
     def get_image_reference_point(self):
         return self.get_feature_points()[self.image_reference_point_index]
 
-    def get_model_reference_vertex(self):
-        return self.get_vertices()[self.model_reference_point_index]
-
     def get_image_distance_points(self):
         return [self.get_feature_points()[self.image_distance_point_indexes[0]],
                 self.get_feature_points()[self.image_distance_point_indexes[1]]]
+
+    def _get_world_vextex(self, vertex):
+        return bpy.context.active_object.matrix_world * vertex.co
+
+    def get_model_reference_vertex(self):
+        return self._get_world_vextex(self.get_vertices()[self.model_reference_point_index])
     
     def get_model_distance_vertices(self):
-        return [self.get_vertices()[self.model_distance_point_indexes[0]], 
-                self.get_vertices()[self.model_distance_point_indexes[1]]]
+        return [self._get_world_vextex(self.get_vertices()[self.model_distance_point_indexes[0]]), 
+                self._get_world_vextex(self.get_vertices()[self.model_distance_point_indexes[1]])]
 
     def get_landmarks(self):
         return self.landmarks
@@ -66,7 +69,7 @@ class Model:
         return self.get_feature_points()[landmark.get_point_index()]
 
     def get_vertex(self, landmark):
-        return self.get_vertices()[landmark.get_vertex_index()]
+        return self._get_world_vextex(self.get_vertices()[landmark.get_vertex_index()])
 
     def get_parts(self, landmark):
         parts = []
@@ -79,9 +82,6 @@ class Model:
     def _get_local_image_point(self, point):
         result = point - self.get_image_reference_point()
         return Point(result.x, -result.y)
-
-    def _get_world_vextex(self, vertex):
-        return bpy.context.active_object.matrix_world * vertex.co
 
     #モデル投射頂点間の距離取得
     #in: 頂点1, 頂点2
@@ -96,21 +96,21 @@ class Model:
         image = self.get_image_distance_points()
         model = self.get_model_distance_vertices()
         image_d = Point.distance(image[0], image[1])
-        model_d = self._get_projection_vector_distance_xz(self._get_world_vextex(model[0]), self._get_world_vextex(model[1]))
+        model_d = self._get_projection_vector_distance_xz(model[0], model[1])
         return math.fabs(model_d / image_d)
 
     #モデルの頂点のローカル座標取得
     #in: 頂点
     def _get_local_model_point(self, vertex):
-        return Point(self._get_projection_vector_distance_xz(vertex, self._get_world_vextex(self.get_model_reference_vertex())),
-                    vertex.y - self._get_world_vextex(self.get_model_reference_vertex()).y)
+        return Point(self._get_projection_vector_distance_xz(vertex, self.get_model_reference_vertex()),
+                    vertex.y - self.get_model_reference_vertex().y)
 
     #特徴点と対応点との距離計算
     #in: 特徴点インデックス
     def _get_distance(self, landmark):
         image = self._get_local_image_point(self.get_feature_point(landmark))
         image *= self._get_magnification()
-        model = self._get_local_model_point(self._get_world_vextex(self.get_vertex(landmark)))
+        model = self._get_local_model_point(self.get_vertex(landmark))
         return image - model
     
     #移動先座標
@@ -120,10 +120,10 @@ class Model:
         if (not(landmark.has_index())):
             return hook_vertex
         
-        vector = self._get_world_vextex(self.get_vertex(landmark))
+        vector = self.get_vertex(landmark)
         #対応点とフックモディファイア座標の誤差
         error_vertex = vector - hook_vertex
-
+        
         value = self._get_distance(landmark)
         result = [vector.x - error_vertex.x + value.x * math.cos(self.yaw_angle),
                   vector.y - error_vertex.y  + value.y,
