@@ -3,7 +3,7 @@ import bpy
 import math
 import sys
 import numpy as np
-sys.path.append("/home/yaku/work/model_sculptor/script")
+sys.path.append("../script")
 from model import Model
 from landmark import Landmark
 
@@ -25,7 +25,9 @@ class ModelSculptor:
     RER_INDEX = [180,181,184,186,187,191,200,203,220,221,241,252,253,254,255,256,257,272,274,276,277,278,280,281,282,283]
 
     ALLOWABLE_ERROR = 0.3
+    MAX_CONVERGENCE = 10
     completion_count = 0
+    convergence_count = 0
 
     def __init__(self, model_name, file_name, yaw_angle):
         ModelSculptor.MODEL_NAME = model_name
@@ -192,7 +194,7 @@ class ModelSculptor:
    
     #変形完了したかの判定
     def _get_completion_flag(self):
-        return self.completion_count != len(self.model.get_landmarks())
+        return self.completion_count != len(self.model.get_landmarks()) and self.convergence_count < self.MAX_CONVERGENCE
 
     #頂点座標データファイル書き込み
     #in: ファイル名 
@@ -210,6 +212,8 @@ class ModelSculptor:
             self._laplaciandeform_bind()
             self._empty_locatuion_update()
             self._cleanup()
+            self.convergence_count += 1
+            print(self.convergence_count)
             print("-----------------------------------------")
         self._write_vertex_result("result.txt")
         return True

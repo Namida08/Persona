@@ -3,7 +3,7 @@ import bpy
 import bpy_extras
 import math
 import sys
-sys.path.append("/home/yaku/work/model_sculptor/script")
+sys.path.append("../script")
 from landmark import Landmark
 from point import Point
 
